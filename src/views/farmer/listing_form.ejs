@@ -1,0 +1,63 @@
+<%- include('../partials/header', { title: listing ? 'Edit Produce Listing' : 'Add Produce Listing' }) %>
+<h1><%= listing ? 'Edit Produce Listing' : 'Add Produce Listing' %></h1>
+<p class="subtitle">Every listing is reviewed by an Admin before it becomes visible to buyers, usually within a short time.</p>
+
+<form class="stacked" action="<%= listing ? '/farmer/listings/' + listing.id + '/edit' : '/farmer/listings/new' %>" method="POST" enctype="multipart/form-data">
+  <% if (listing && listing.photo_path) { %>
+    <img src="/uploads/<%= listing.photo_path %>" style="width:100%; max-height:220px; object-fit:cover; border-radius:8px;">
+  <% } %>
+  <label>Photo <%= listing ? '(leave blank to keep current photo)' : '' %></label>
+  <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" <%= listing ? '' : 'required' %>>
+
+  <label>Crop Type</label>
+  <select name="cropType" id="cropType" onchange="toggleOther()">
+    <% crops.forEach(function(c) { %>
+      <option value="<%= c %>" <%= listing && listing.crop_type === c ? 'selected' : (listing && !crops.includes(listing.crop_type) && c === otherCrop ? 'selected' : '') %>><%= c %></option>
+    <% }) %>
+  </select>
+  <input type="text" name="otherCropType" id="otherCropType" placeholder="Please specify the crop/produce type"
+         style="display:none; margin-top:8px;"
+         value="<%= listing && !crops.includes(listing.crop_type) ? listing.crop_type : '' %>">
+
+  <div class="two-col">
+    <div>
+      <label>Quantity</label>
+      <input type="number" step="0.01" min="0.01" name="quantity" value="<%= listing ? listing.quantity : '' %>" required>
+    </div>
+    <div>
+      <label>Unit</label>
+      <select name="unit">
+        <% units.forEach(function(u) { %>
+          <option value="<%= u %>" <%= listing && listing.unit === u ? 'selected' : '' %>><%= u %></option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+
+  <label>Price per unit (₦)</label>
+  <input type="number" step="0.01" min="0.01" name="pricePerUnit" value="<%= listing ? listing.price_per_unit : '' %>" required>
+
+  <label>Description (optional — quality, harvest date, etc.)</label>
+  <textarea name="description"><%= listing ? listing.description : '' %></textarea>
+
+  <label>Produce location (LGA)</label>
+  <select name="locationLGA">
+    <% lgas.forEach(function(lga) { %>
+      <option value="<%= lga %>" <%= (listing ? listing.location_lga === lga : currentUser.locationLGA === lga) ? 'selected' : '' %>><%= lga %></option>
+    <% }) %>
+  </select>
+
+  <button type="submit" class="btn btn-primary btn-block" style="margin-top:20px;">
+    <%= listing ? 'Save Changes (re-review required)' : 'Save Listing' %>
+  </button>
+</form>
+
+<script>
+function toggleOther() {
+  var sel = document.getElementById('cropType');
+  var other = document.getElementById('otherCropType');
+  other.style.display = sel.value === "<%= otherCrop %>" ? 'block' : 'none';
+}
+toggleOther();
+</script>
+<%- include('../partials/footer') %>

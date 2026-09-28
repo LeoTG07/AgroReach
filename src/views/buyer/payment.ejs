@@ -1,0 +1,60 @@
+<%- include('../partials/header', { title: 'Payment' }) %>
+<h1>Payment</h1>
+
+<div class="summary-box">
+  <div class="subtitle">Order #<%= order.id %> — Total</div>
+  <div class="summary-total">₦<%= order.total_amount.toFixed(2) %></div>
+  <div class="subtitle" style="margin-top:4px;">
+    Produce: ₦<%= order.produce_total.toFixed(2) %> + Delivery to <%= order.buyer_state %> (<%= order.distance_km %> km): ₦<%= order.transport_fee.toFixed(2) %>
+  </div>
+</div>
+
+<p style="color:var(--orange); font-weight:600;">TEST MODE — no real money moves. Use a Paystack test card.</p>
+
+<button id="payBtn" class="btn btn-primary btn-block">Pay ₦<%= order.total_amount.toFixed(2) %> with Paystack</button>
+<p id="payStatus" style="margin-top:12px; color:var(--grey);"></p>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script>
+document.getElementById('payBtn').addEventListener('click', function () {
+  const btn = this;
+  btn.disabled = true;
+  const statusEl = document.getElementById('payStatus');
+  statusEl.textContent = 'Opening secure payment window…';
+
+  const handler = PaystackPop.setup({
+    key: '<%= paystackPublicKey %>',
+    email: '<%= userEmail %>',
+    amount: <%= Math.round(order.total_amount * 100) %>,
+    currency: 'NGN',
+    ref: 'AGR-<%= order.id %>-' + Date.now(),
+    callback: function (response) {
+      statusEl.textContent = 'Verifying payment…';
+      fetch('/buyer/orders/<%= order.id %>/pay/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: response.reference }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.success) {
+            window.location.href = '/buyer/orders';
+          } else {
+            statusEl.textContent = 'Payment succeeded but verification failed: ' + data.message + ' (reference: ' + response.reference + ')';
+            btn.disabled = false;
+          }
+        })
+        .catch(function () {
+          statusEl.textContent = 'Payment succeeded but something went wrong saving your order. Reference: ' + response.reference + '. Please contact support.';
+          btn.disabled = false;
+        });
+    },
+    onClose: function () {
+      statusEl.textContent = 'Payment window closed.';
+      btn.disabled = false;
+    },
+  });
+  handler.openIframe();
+});
+</script>
+<%- include('../partials/footer') %>

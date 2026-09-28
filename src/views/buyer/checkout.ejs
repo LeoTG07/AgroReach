@@ -1,0 +1,37 @@
+<%- include('../partials/header', { title: 'Request Order' }) %>
+<h1>Request Order</h1>
+<p class="subtitle">Review your cart, then choose your delivery details. You'll pick a transport option on the next screen, and pay only after the farmer approves.</p>
+
+<% groups.forEach(function(g) { %>
+  <div class="card">
+    <strong>From <%= g.farmer_name %></strong>
+    <% g.items.forEach(function(i) { %>
+      <div style="display:flex; justify-content:space-between; padding:4px 0;">
+        <span>• <%= i.crop_type %> — <%= i.quantity %> <%= i.unit %> × ₦<%= i.price_per_unit %></span>
+        <span>₦<%= (i.price_per_unit * i.quantity).toFixed(2) %></span>
+      </div>
+    <% }) %>
+    <div style="border-top:1px solid var(--border); margin-top:8px; padding-top:8px; display:flex; justify-content:space-between;">
+      <span>Produce subtotal</span><strong>₦<%= g.subtotal.toFixed(2) %></strong>
+    </div>
+  </div>
+<% }) %>
+
+<h2>Delivery Details</h2>
+<div class="card delivery-card">
+  <div class="delivery-state-row">
+    <span class="delivery-state-label">Delivering to</span>
+    <span class="state-badge"><%= user.state %></span>
+    <a href="/buyer/profile" class="delivery-state-edit">change</a>
+  </div>
+
+  <form class="stacked" action="/buyer/checkout/logistics" method="POST">
+    <label>Delivery address <span class="subtitle" style="font-weight:400;">(street, landmark, or nearest park to you)</span></label>
+    <textarea name="deliveryAddress" required placeholder="e.g. 12 Adeola Street, near Jibowu Market"><%= user.delivery_address || '' %></textarea>
+
+    <button type="submit" class="btn btn-primary btn-block" style="margin-top:18px;">
+      Proceed to Select Transportation Logistics →
+    </button>
+  </form>
+</div>
+<%- include('../partials/footer') %>

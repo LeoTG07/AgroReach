@@ -1,0 +1,37 @@
+<%- include('../partials/header', { title: 'My Produce Listings' }) %>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+  <h1>My Produce Listings</h1>
+  <a href="/farmer/listings/new" class="btn btn-primary">+ Add Listing</a>
+</div>
+
+<% if (listings.length === 0) { %>
+  <div class="empty-state">You haven't listed any produce yet.<br>Tap "+ Add Listing" to get started.</div>
+<% } else { %>
+  <% listings.forEach(function(l) { %>
+    <div class="card">
+      <div class="card-row">
+        <% if (l.photo_path) { %>
+          <img class="card-photo" src="/uploads/<%= l.photo_path %>" alt="<%= l.crop_type %>">
+        <% } else { %>
+          <div class="card-photo"></div>
+        <% } %>
+        <div style="flex:1;">
+          <strong><%= l.crop_type %></strong>
+          <div class="subtitle" style="margin:2px 0;">₦<%= l.price_per_unit %>/<%= l.unit %> • <%= l.quantity %> <%= l.unit %> available</div>
+          <span class="status-pill status-<%= l.status.toLowerCase() %>">
+            <%= ({PENDING_REVIEW:'⏳ Pending Review', AVAILABLE:'✓ Available to Buyers', REJECTED:'✗ Rejected — edit and resubmit', SOLD_OUT:'Sold Out', REMOVED:'Removed'})[l.status] %>
+          </span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <a href="/farmer/listings/<%= l.id %>/edit" class="btn btn-outline">Edit</a>
+          <% if (l.status !== 'REMOVED') { %>
+          <form action="/farmer/listings/<%= l.id %>/remove" method="POST" onsubmit="return confirm('Remove this listing?');">
+            <button type="submit" class="btn btn-outline" style="color:#C62828;">Remove</button>
+          </form>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+<% } %>
+<%- include('../partials/footer') %>

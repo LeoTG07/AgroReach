@@ -1,0 +1,54 @@
+<%- include('../partials/header', { title: 'Browse Produce' }) %>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+  <h1>Browse Produce</h1>
+  <a href="/buyer/cart" class="btn btn-blue">Cart (<%= cartCount %>)</a>
+</div>
+
+<form method="GET" action="/buyer/dashboard" style="margin-bottom:16px;">
+  <input type="text" name="q" placeholder="Search by crop type (e.g. Tomatoes)" value="<%= query || '' %>"
+         style="width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px;">
+</form>
+
+<% if (listings.length === 0) { %>
+  <div class="empty-state">No produce listings match your search.</div>
+<% } else { %>
+  <% listings.forEach(function(l) { %>
+    <div class="card">
+      <div class="card-row">
+        <% if (l.photo_path) { %>
+          <img class="card-photo" src="/uploads/<%= l.photo_path %>" alt="<%= l.crop_type %>">
+        <% } else { %>
+          <div class="card-photo"></div>
+        <% } %>
+        <div style="flex:1;">
+          <strong><%= l.crop_type %></strong>
+          <div class="subtitle" style="margin:2px 0;">Sold by <%= l.farmer_name %></div>
+          <div style="font-weight:600;">₦<%= l.price_per_unit %>/<%= l.unit %> • <%= l.quantity %> <%= l.unit %> available</div>
+          <div class="subtitle"><%= l.location_lga %></div>
+        </div>
+      </div>
+      <form action="/buyer/cart/add" method="POST" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+        <input type="hidden" name="listingId" value="<%= l.id %>">
+        <div class="qty-stepper">
+          <button type="button" onclick="stepQty(this,-1)">−</button>
+          <span class="qty-display">1</span>
+          <button type="button" onclick="stepQty(this,1)">+</button>
+          <input type="hidden" name="quantity" value="1" class="qty-input">
+        </div>
+        <button type="submit" class="btn btn-blue" style="flex:1;">Add to Cart</button>
+      </form>
+    </div>
+  <% }) %>
+<% } %>
+
+<script>
+function stepQty(btn, delta) {
+  var wrap = btn.closest('.qty-stepper');
+  var display = wrap.querySelector('.qty-display');
+  var input = wrap.querySelector('.qty-input');
+  var val = Math.max(1, parseInt(display.textContent) + delta);
+  display.textContent = val;
+  input.value = val;
+}
+</script>
+<%- include('../partials/footer') %>

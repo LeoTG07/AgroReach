@@ -1,0 +1,98 @@
+<%- include('../partials/header', { title: 'Logistics Dashboard' }) %>
+<h1>Logistics Dashboard</h1>
+<p class="subtitle">Every order on the platform, end to end.</p>
+
+<div class="card-row" style="flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+  <div class="card" style="flex:1; min-width:120px; text-align:center;">
+    <div style="font-size:22px; font-weight:700;"><%= summary.total %></div>
+    <div class="subtitle" style="margin:0;">Total Orders</div>
+  </div>
+  <div class="card" style="flex:1; min-width:120px; text-align:center;">
+    <div style="font-size:22px; font-weight:700; color:var(--orange);"><%= summary.awaitingApproval %></div>
+    <div class="subtitle" style="margin:0;">Awaiting Approval</div>
+  </div>
+  <div class="card" style="flex:1; min-width:120px; text-align:center;">
+    <div style="font-size:22px; font-weight:700; color:var(--blue);"><%= summary.active %></div>
+    <div class="subtitle" style="margin:0;">Paid / In Transit</div>
+  </div>
+  <div class="card" style="flex:1; min-width:120px; text-align:center;">
+    <div style="font-size:22px; font-weight:700; color:var(--green);"><%= summary.delivered %></div>
+    <div class="subtitle" style="margin:0;">Delivered</div>
+  </div>
+  <div class="card" style="flex:1; min-width:120px; text-align:center;">
+    <div style="font-size:22px; font-weight:700; color:#C62828;"><%= summary.soldOut %></div>
+    <div class="subtitle" style="margin:0;">Sold Out</div>
+  </div>
+  <div class="card" style="flex:1; min-width:140px; text-align:center;">
+    <div style="font-size:22px; font-weight:700;">₦<%= summary.revenueCollected.toFixed(0) %></div>
+    <div class="subtitle" style="margin:0;">Collected (Paystack)</div>
+  </div>
+  <div class="card" style="flex:1; min-width:140px; text-align:center;">
+    <div style="font-size:22px; font-weight:700; color:var(--orange);"><%= summary.pendingPayouts %></div>
+    <div class="subtitle" style="margin:0;">Payouts Pending</div>
+  </div>
+</div>
+
+<% if (orders.length === 0) { %>
+  <div class="empty-state">No orders yet.</div>
+<% } else { %>
+<div style="overflow-x:auto;">
+<table class="logistics">
+  <thead>
+    <tr>
+      <th>#</th><th>Buyer</th><th>Farmer</th><th>Produce</th><th>Status</th>
+      <th>Payment</th><th>Transport</th><th>Delivery</th><th>Payout</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% orders.forEach(function(o) { %>
+      <tr>
+        <td><strong>#<%= o.id %></strong><br><span class="mono-small"><%= new Date(o.created_at).toLocaleDateString() %></span></td>
+        <td><%= o.buyer_name %><br><span class="mono-small"><%= o.buyer_state %></span></td>
+        <td><%= o.farmer_name %></td>
+        <td><%= o.items.map(function(i){ return i.crop_type; }).join(', ') %><br><span class="mono-small">₦<%= o.total_amount.toFixed(0) %> total</span></td>
+        <td><span class="status-pill status-<%= o.status.toLowerCase() %>"><%= o.status.replace(/_/g,' ') %></span>
+          <% if (o.status === 'REJECTED' && o.rejection_reason) { %><br><span class="mono-small"><%= o.rejection_reason %></span><% } %>
+        </td>
+        <td>
+          <% if (o.payment_verified) { %>✓ Paid<br><span class="mono-small"><%= o.payment_reference %></span>
+          <% } else { %>—<% } %>
+        </td>
+        <td>
+          <% if (o.fulfilling_company_name) { %>
+            <%= o.fulfilling_company_name %><br>
+            <span class="mono-small"><%= o.fulfilling_kaduna_park %></span><br>
+            <% if (o.transport_company_paid) { %><span class="mono-small">✓ carrier paid</span><% } %>
+          <% } else { %>—<% } %>
+        </td>
+        <td>
+          <% if (o.delivery_tracking_id) { %><span class="mono-small">ID: <%= o.delivery_tracking_id %></span><br><% } %>
+          <% if (o.estimated_delivery_hours) { %><span class="mono-small">ETA: ~<%= o.estimated_delivery_hours %>h</span><br><% } %>
+          <% if (o.delivered_at) { %>✓ Delivered<br><span class="mono-small"><%= new Date(o.delivered_at).toLocaleString() %></span>
+          <% } else if (o.dropped_off_at) { %>In transit
+          <% } else { %>—<% } %>
+        </td>
+        <td>
+          <% if (o.farmer_paid_out) { %>✓ Sent
+          <% } else if (o.farmer_bank_account) { %>Ready<br><span class="mono-small">***<%= o.farmer_bank_account.slice(-4) %></span>
+          <% } else { %>—<% } %>
+        </td>
+        <td>
+          <% if (o.fulfilling_company_id && !o.transport_company_paid) { %>
+            <form action="/admin/orders/<%= o.id %>/pay-transport" method="POST" onsubmit="return confirm('Confirm payment to ' + '<%= o.fulfilling_company_name %>' + '?');">
+              <button type="submit" class="btn btn-outline" style="font-size:11px; padding:6px 10px;">Pay Carrier</button>
+            </form>
+          <% } %>
+          <% if (o.status === 'DELIVERED' && o.farmer_bank_account && !o.farmer_paid_out) { %>
+            <form action="/admin/orders/<%= o.id %>/pay-farmer" method="POST" onsubmit="return confirm('Send ₦<%= o.produce_total.toFixed(2) %> to ' + '<%= o.farmer_name %>' + '?');" style="margin-top:4px;">
+              <button type="submit" class="btn btn-primary" style="font-size:11px; padding:6px 10px;">Pay Farmer</button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+<%- include('../partials/footer') %>

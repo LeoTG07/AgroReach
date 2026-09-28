@@ -1,0 +1,29 @@
+<%- include('../partials/header', { title: 'Payout' }) %>
+<h1>Request Your Payout</h1>
+<p class="subtitle">Order #<%= order.id %> was delivered — here's what you're owed.</p>
+
+<div class="summary-box">
+  <div class="subtitle">You're being paid</div>
+  <div class="summary-total">₦<%= order.produce_total.toFixed(2) %></div>
+  <div class="subtitle" style="margin-top:4px;">(Produce total only — the ₦<%= order.transport_fee.toFixed(2) %> delivery fee was already paid to <%= order.fulfilling_company_name %>.)</div>
+</div>
+
+<% if (savedBank && savedBank.bank_account_number) { %>
+  <div class="card" style="background:var(--green-light); border-color:var(--green); margin-bottom:16px;">
+    <p style="margin:0; color:var(--green); font-weight:600; font-size:13.5px;">
+      ✓ Using your saved bank details from your profile — check they're still correct below.
+    </p>
+  </div>
+<% } %>
+
+<form class="stacked" action="/farmer/orders/<%= order.id %>/payout" method="POST">
+  <label>Bank name</label>
+  <input type="text" name="bankName" placeholder="e.g. First Bank" value="<%= (savedBank && savedBank.bank_name) || '' %>" required>
+
+  <label>Account number (10 digits)</label>
+  <input type="text" name="bankAccount" pattern="[0-9]{10}" maxlength="10" placeholder="0123456789" value="<%= (savedBank && savedBank.bank_account_number) || '' %>" required>
+
+  <button type="submit" class="btn btn-primary btn-block" style="margin-top:16px;">Submit for Payout</button>
+</form>
+<p class="subtitle" style="margin-top:10px;">The admin will confirm and send your payout from the dashboard.</p>
+<%- include('../partials/footer') %>

@@ -1,0 +1,14 @@
+<%- include('../partials/header', { title: 'Messages' }) %>
+<h1>Messages</h1>
+
+<% if (conversations.length === 0) { %>
+  <div class="empty-state">No conversations yet. Message a farmer or buyer from an order to start one.</div>
+<% } else { %>
+  <% conversations.forEach(function(c) { %>
+    <a href="/messages/<%= c.other.id %>" class="card" style="display:block; text-decoration:none; color:inherit;">
+      <strong><%= c.other.name %></strong> <span class="subtitle">(<%= c.other.role.toLowerCase() %>)</span>
+      <p class="subtitle" style="margin:4px 0 0;"><%= c.lastMessage %></p>
+    </a>
+  <% }) %>
+<% } %>
+<%- include('../partials/footer') %>

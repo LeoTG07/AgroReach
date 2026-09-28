@@ -1,0 +1,31 @@
+<%- include('../partials/header', { title: 'My Profile' }) %>
+<h1>My Profile</h1>
+<p class="subtitle">Update your contact details and delivery state.</p>
+
+<div class="card">
+  <form class="stacked" action="/buyer/profile" method="POST">
+    <label>Full name</label>
+    <input type="text" name="name" value="<%= user.name %>" required>
+
+    <label>Email address</label>
+    <input type="email" value="<%= user.email %>" disabled style="background:#F5F5F5;">
+    <p class="subtitle" style="margin:4px 0 0;">Email can't be changed here — contact support if needed.</p>
+
+    <label>Phone number</label>
+    <input type="tel" name="phone" value="<%= user.phone %>" required>
+
+    <label>Your State</label>
+    <select name="state">
+      <% states.forEach(function(s) { %>
+        <option value="<%= s %>" <%= user.state === s ? 'selected' : '' %>><%= s %></option>
+      <% }) %>
+    </select>
+    <p class="subtitle" style="margin:4px 0 0;">Changing this only affects future orders — it won't touch anything already placed.</p>
+
+    <label>Default delivery address (street, landmark, etc.)</label>
+    <textarea name="deliveryAddress"><%= user.delivery_address || '' %></textarea>
+
+    <button type="submit" class="btn btn-primary btn-block" style="margin-top:18px;">Save Changes</button>
+  </form>
+</div>
+<%- include('../partials/footer') %>

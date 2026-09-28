@@ -1,0 +1,16 @@
+<%- include('../partials/header', { title: 'Notifications' }) %>
+<h1>Notifications</h1>
+
+<% if (items.length === 0) { %>
+  <div class="empty-state">No notifications yet.</div>
+<% } else { %>
+  <% items.forEach(function(n) { %>
+    <div class="notif-item <%= n.is_read ? '' : 'unread' %>">
+      <% if (n.link) { %><a href="<%= n.link %>"><% } %>
+        <%= n.message %>
+      <% if (n.link) { %></a><% } %>
+      <div class="notif-time"><%= new Date(n.created_at).toLocaleString() %></div>
+    </div>
+  <% }) %>
+<% } %>
+<%- include('../partials/footer') %>

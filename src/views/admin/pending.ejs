@@ -1,0 +1,29 @@
+<%- include('../partials/header', { title: 'Pending Listings' }) %>
+<h1>Pending Listings</h1>
+<p class="subtitle">Review each listing's photo against its selected crop type before approving.</p>
+
+<% if (listings.length === 0) { %>
+  <div class="empty-state">No listings waiting for review right now.</div>
+<% } else { %>
+  <% listings.forEach(function(l) { %>
+    <div class="card">
+      <% if (l.photo_path) { %>
+        <img src="/uploads/<%= l.photo_path %>" style="width:100%; max-height:220px; object-fit:cover; border-radius:8px;">
+      <% } %>
+      <h2 style="margin:10px 0 2px;">Submitted as: <%= l.crop_type %></h2>
+      <p class="subtitle" style="margin:0;">By <%= l.farmer_name %> • <%= l.location_lga %></p>
+      <p style="margin:6px 0;">₦<%= l.price_per_unit %>/<%= l.unit %> • <%= l.quantity %> <%= l.unit %></p>
+      <p class="subtitle"><%= l.description || '(no description provided)' %></p>
+
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <form action="/admin/listings/<%= l.id %>/reject" method="POST" style="flex:1;" onsubmit="return confirm('Reject this listing?');">
+          <button type="submit" class="btn btn-danger btn-block">Reject</button>
+        </form>
+        <form action="/admin/listings/<%= l.id %>/approve" method="POST" style="flex:1;" onsubmit="return confirm('Approve this listing?');">
+          <button type="submit" class="btn btn-primary btn-block">Approve</button>
+        </form>
+      </div>
+    </div>
+  <% }) %>
+<% } %>
+<%- include('../partials/footer') %>

@@ -1,0 +1,39 @@
+<%- include('../partials/header', { title: 'My Profile' }) %>
+<h1>My Profile</h1>
+<p class="subtitle">Update your contact, farm, and payout details.</p>
+
+<div class="card">
+  <form class="stacked" action="/farmer/profile" method="POST">
+    <label>Full name</label>
+    <input type="text" name="name" value="<%= user.name %>" required>
+
+    <label>Email address</label>
+    <input type="email" value="<%= user.email %>" disabled style="background:#F5F5F5;">
+    <p class="subtitle" style="margin:4px 0 0;">Email can't be changed here — contact support if needed.</p>
+
+    <label>Phone number</label>
+    <input type="tel" name="phone" value="<%= user.phone %>" required>
+
+    <label>Farm / business name (optional)</label>
+    <input type="text" name="businessName" value="<%= user.business_name || '' %>">
+
+    <label>Your Local Government Area (LGA)</label>
+    <select name="locationLGA">
+      <% lgas.forEach(function(lga) { %>
+        <option value="<%= lga %>" <%= user.location_lga === lga ? 'selected' : '' %>><%= lga %></option>
+      <% }) %>
+    </select>
+
+    <h2 style="margin-top:20px;">Payout Bank Details</h2>
+    <p class="subtitle" style="margin:0 0 8px;">Used to pre-fill payout requests after a delivery.</p>
+
+    <label>Bank name</label>
+    <input type="text" name="bankName" value="<%= user.bank_name || '' %>" placeholder="e.g. First Bank">
+
+    <label>Account number (10 digits)</label>
+    <input type="text" name="bankAccount" value="<%= user.bank_account_number || '' %>" pattern="[0-9]{10}" maxlength="10" placeholder="0123456789">
+
+    <button type="submit" class="btn btn-primary btn-block" style="margin-top:18px;">Save Changes</button>
+  </form>
+</div>
+<%- include('../partials/footer') %>

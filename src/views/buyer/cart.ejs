@@ -1,0 +1,36 @@
+<%- include('../partials/header', { title: 'Your Cart' }) %>
+<h1>Your Cart</h1>
+
+<% if (items.length === 0) { %>
+  <div class="empty-state">Your cart is empty.<br>Browse produce and tap "Add to Cart" to get started.</div>
+<% } else { %>
+  <% items.forEach(function(i) { %>
+    <div class="card">
+      <strong><%= i.crop_type %></strong>
+      <div class="subtitle">₦<%= i.price_per_unit %> / <%= i.unit %></div>
+      <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+        <form action="/buyer/cart/<%= i.id %>/update" method="POST" class="qty-stepper">
+          <button type="submit" name="quantity" value="<%= i.quantity - 1 %>">−</button>
+          <span><%= i.quantity %></span>
+          <button type="submit" name="quantity" value="<%= i.quantity + 1 %>">+</button>
+        </form>
+        <span style="flex:1; text-align:right; font-weight:700;">₦<%= (i.price_per_unit * i.quantity).toFixed(2) %></span>
+        <form action="/buyer/cart/<%= i.id %>/remove" method="POST" onsubmit="return confirm('Remove this item?');">
+          <button type="submit" class="btn btn-outline" style="color:#C62828;">Remove</button>
+        </form>
+      </div>
+    </div>
+  <% }) %>
+
+  <div class="summary-box" style="margin-top:20px;">
+    <div style="display:flex; justify-content:space-between;">
+      <span>Produce Subtotal</span>
+      <span class="summary-total">₦<%= total.toFixed(2) %></span>
+    </div>
+    <% if (farmerCount > 1) { %>
+      <p class="subtitle" style="margin:8px 0 0;">Items from <%= farmerCount %> different farmers — this will be sent as <%= farmerCount %> separate order requests, each needing that farmer's approval, and each with its own delivery fee.</p>
+    <% } %>
+  </div>
+  <a href="/buyer/checkout" class="btn btn-primary btn-block">Request Order</a>
+<% } %>
+<%- include('../partials/footer') %>

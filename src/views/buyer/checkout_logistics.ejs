@@ -1,0 +1,43 @@
+<%- include('../partials/header', { title: 'Select Transportation Logistics' }) %>
+<h1>Select Transportation Logistics</h1>
+
+<div class="step-indicator">
+  <div class="step-dot done">✓</div><span>Delivery Details</span>
+  <div class="step-line done"></div>
+  <div class="step-dot active">2</div><span>Transportation Logistics</span>
+</div>
+
+<p class="subtitle">Ranked cheapest first — priced by carrier, real distance to <%= user.state %>, and each farmer's order size. Once you submit, this choice is final and will be shown to the farmer for approval.</p>
+
+<form action="/buyer/checkout/submit" method="POST">
+  <input type="hidden" name="deliveryAddress" value="<%= deliveryAddress %>">
+
+  <% groups.forEach(function(g) { %>
+    <div class="card logistics-farmer-block">
+      <div class="logistics-farmer-header">
+        <span class="name">From <%= g.farmer_name %></span>
+        <span class="subtotal">Produce: ₦<%= g.subtotal.toFixed(2) %></span>
+      </div>
+      <p class="logistics-hint"><%= g.distanceKm %> km from Kaduna to <%= user.state %> · <%= g.totalQuantity %> units in this order</p>
+
+      <% g.options.forEach(function(opt, idx) { %>
+        <label class="transport-option" style="cursor:pointer;">
+          <input type="radio" name="company_<%= g.farmer_id %>" value="<%= opt.companyId %>" <%= idx === 0 ? 'checked' : '' %> required style="margin-right:10px;">
+          <div style="flex:1;">
+            <div class="name"><%= opt.name %><% if (idx === 0) { %> <span style="color:var(--green); font-weight:700; font-size:11px;">★ CHEAPEST</span><% } %></div>
+            <div class="addr">Pickup in <%= user.state %>: <%= opt.destAddress %></div>
+          </div>
+          <div style="font-weight:700; color:var(--blue); font-size:15px;">₦<%= opt.price.toFixed(2) %></div>
+        </label>
+      <% }) %>
+    </div>
+  <% }) %>
+
+  <div style="display:flex; gap:10px; margin-top:6px;">
+    <a href="/buyer/checkout" class="btn btn-outline" style="flex:0 0 auto;">← Back</a>
+    <button type="submit" class="btn btn-primary" style="flex:1;">
+      Send Order Request<%= groups.length > 1 ? 's' : '' %>
+    </button>
+  </div>
+</form>
+<%- include('../partials/footer') %>

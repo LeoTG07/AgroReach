@@ -1,0 +1,83 @@
+<%- include('../partials/header', { title: 'Register' }) %>
+
+<div class="landing-intro">
+  <h1>Create your AgroReach account</h1>
+  <p class="subtitle" style="margin-bottom:14px;">
+    AgroReach is a web platform that connects <strong>buyers anywhere in Nigeria</strong> directly with
+    <strong>smallholder farmers in Kaduna State</strong> — cutting out exploitative middlemen and pairing
+    every purchase with a real, distance-priced delivery route from Kaduna to your state.
+  </p>
+  <ul class="landing-points">
+    <li><strong>Farmers</strong> (1–10 plots of land) list their produce with a photo; every listing is reviewed before it goes live, so buyers know what they see is what they get.</li>
+    <li><strong>Buyers</strong> anywhere in Nigeria's 36 states + FCT can browse, order, and pay securely — delivery is quoted by real road distance from Kaduna to your state, so nearby states cost less than farther ones.</li>
+    <li>Every order is tracked end-to-end — approval, payment, transport hand-off, and delivery — right up to the farmer getting paid.</li>
+  </ul>
+</div>
+
+<form class="stacked" action="/register" method="POST">
+  <div class="radio-row">
+    <label><input type="radio" name="role" value="FARMER" <%= (typeof formData !== 'undefined' && formData.role === 'BUYER') ? '' : 'checked' %> onclick="toggleFarmerFields(true)"> I'm a Farmer</label>
+    <label><input type="radio" name="role" value="BUYER" <%= (typeof formData !== 'undefined' && formData.role === 'BUYER') ? 'checked' : '' %> onclick="toggleFarmerFields(false)"> I'm a Buyer</label>
+  </div>
+
+  <label>Full name</label>
+  <input type="text" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : '' %>" required>
+
+  <label>Email address</label>
+  <input type="email" name="email" value="<%= typeof formData !== 'undefined' ? formData.email : '' %>" required>
+
+  <label>Phone number</label>
+  <input type="tel" name="phone" value="<%= typeof formData !== 'undefined' ? formData.phone : '' %>" required>
+
+  <label>Password (min. 6 characters)</label>
+  <div class="password-field">
+    <input type="password" name="password" id="regPassword" required minlength="6">
+    <button type="button" class="password-toggle" onclick="togglePassword('regPassword', this)" aria-label="Show password">&#128065;</button>
+  </div>
+
+  <div id="farmerFields">
+    <label>Farm / business name (optional)</label>
+    <input type="text" name="businessName" value="<%= typeof formData !== 'undefined' ? formData.businessName : '' %>">
+
+    <label>Number of plots you farm (1–10)</label>
+    <input type="number" name="plotCount" min="1" max="10" value="<%= typeof formData !== 'undefined' ? formData.plotCount : '' %>">
+    <p class="subtitle" style="margin:4px 0 0;">AgroReach is built for smallholder farmers (1–10 plots of land).</p>
+
+    <label>Your Local Government Area (LGA)</label>
+    <select name="locationLGA">
+      <% lgas.forEach(function(lga) { %>
+        <option value="<%= lga %>" <%= (typeof formData !== 'undefined' && formData.locationLGA === lga) ? 'selected' : '' %>><%= lga %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div id="buyerFields">
+    <label>Your State</label>
+    <select name="state">
+      <% states.forEach(function(s) { %>
+        <option value="<%= s %>" <%= (typeof formData !== 'undefined' && formData.state === s) ? 'selected' : '' %>><%= s %></option>
+      <% }) %>
+    </select>
+    <p class="subtitle" style="margin:4px 0 0;">You'll choose your preferred delivery park within this state at checkout.</p>
+  </div>
+
+  <button type="submit" class="btn btn-primary btn-block" style="margin-top:20px;">Create Account</button>
+</form>
+<p style="margin-top:16px;"><a href="/login">Already have an account? Log in</a></p>
+
+<script>
+function toggleFarmerFields(isFarmer) {
+  document.getElementById('farmerFields').style.display = isFarmer ? 'block' : 'none';
+  document.getElementById('buyerFields').style.display = isFarmer ? 'none' : 'block';
+}
+toggleFarmerFields(document.querySelector('input[name=role]:checked').value === 'FARMER');
+
+function togglePassword(fieldId, btn) {
+  const field = document.getElementById(fieldId);
+  const showing = field.type === 'text';
+  field.type = showing ? 'password' : 'text';
+  btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+  btn.classList.toggle('active', !showing);
+}
+</script>
+<%- include('../partials/footer') %>

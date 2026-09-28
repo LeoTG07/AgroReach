@@ -1,0 +1,69 @@
+<%- include('../partials/header', { title: 'My Orders' }) %>
+<h1>My Orders</h1>
+
+<% if (orders.length === 0) { %>
+  <div class="empty-state">You haven't requested any orders yet.</div>
+<% } else { %>
+  <% orders.forEach(function(o) { %>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between;">
+        <span class="subtitle">Order #<%= o.id %> — from <%= o.farmer_name %></span>
+        <span class="status-pill status-<%= o.status.toLowerCase() %>"><%= o.status.replace(/_/g,' ') %></span>
+      </div>
+
+      <%- include('../partials/orderStepper', { stepper: o.stepper, order: o }) %>
+
+      <p style="margin:6px 0;"><%= o.items.map(function(i){ return i.crop_type + ' (' + i.quantity + ' ' + i.unit + ')'; }).join(', ') %></p>
+      <p style="font-weight:700;">Total: ₦<%= o.total_amount.toFixed(2) %> <span class="subtitle" style="font-weight:400;">(produce ₦<%= o.produce_total.toFixed(2) %> + delivery ₦<%= o.transport_fee.toFixed(2) %>)</span></p>
+      <p class="subtitle">Logistics: <%= o.preferred_company_name %> · Deliver to: <%= o.delivery_address %></p>
+
+      <% if (o.status === 'REJECTED' && o.rejection_reason) { %>
+        <p class="subtitle" style="color:#C62828;">Reason: <%= o.rejection_reason %></p>
+      <% } %>
+      <% if (o.status === 'SOLD_OUT') { %>
+        <p class="subtitle" style="color:#C62828;">Sorry — this produce sold out to another buyer before your request could be approved.</p>
+      <% } %>
+
+      <% if (o.status === 'APPROVED_AWAITING_PAYMENT') { %>
+        <a href="/buyer/orders/<%= o.id %>/pay" class="btn btn-primary" style="margin-top:8px;">Pay ₦<%= o.total_amount.toFixed(2) %> Now</a>
+      <% } %>
+
+      <% if (o.status === 'IN_TRANSIT') { %>
+        <div class="card" style="background:#F0F4FF; margin-top:8px;">
+          <p style="margin:0;">In transit via <strong><%= o.fulfilling_company_name %></strong></p>
+          <% if (o.delivery_tracking_id) { %><p style="margin:4px 0 0;">Delivery ID: <strong><%= o.delivery_tracking_id %></strong></p><% } %>
+          <% if (o.estimated_delivery_hours) { %><p style="margin:4px 0 0;">Estimated delivery: ~<%= o.estimated_delivery_hours %> hour(s)</p><% } %>
+        </div>
+      <% } %>
+
+      <% if (o.status === 'DELIVERED') { %>
+        <div class="card" style="background:var(--green-light); margin-top:8px;">
+          <p style="margin:0; color:var(--green); font-weight:600;">
+            <%= o.buyer_name %>, your order is delivered — you can go to <%= o.fulfilling_company_name %><% if (o.fulfilling_dest_park) { %> (<%= o.fulfilling_dest_park %>)<% } %> to pick it up.
+          </p>
+          <% if (o.delivery_tracking_id) { %><p style="margin:4px 0 0; font-size:12.5px;">Delivery ID: <strong><%= o.delivery_tracking_id %></strong></p><% } %>
+        </div>
+      <% } %>
+
+      <% if (o.status === 'DELIVERED' && !o.reviewed) { %>
+        <form action="/buyer/orders/<%= o.id %>/review" method="POST" style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px;">
+          <label class="subtitle">Rate <%= o.farmer_name %></label>
+          <div class="radio-row">
+            <% [5,4,3,2,1].forEach(function(n) { %>
+              <label><input type="radio" name="rating" value="<%= n %>" <%= n===5?'checked':'' %>> <%= n %>★</label>
+            <% }) %>
+          </div>
+          <textarea name="comment" placeholder="Optional comment"></textarea>
+          <button type="submit" class="btn btn-outline" style="margin-top:6px;">Submit Review</button>
+        </form>
+      <% } else if (o.status === 'DELIVERED') { %>
+        <p class="subtitle" style="margin-top:8px;">✓ Reviewed</p>
+      <% } %>
+
+      <% if (o.status !== 'SOLD_OUT') { %>
+        <a href="/messages/<%= o.farmer_id %>?order=<%= o.id %>" class="btn btn-outline" style="margin-top:8px; display:inline-block;">Message Farmer</a>
+      <% } %>
+    </div>
+  <% }) %>
+<% } %>
+<%- include('../partials/footer') %>

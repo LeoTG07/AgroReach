@@ -1,0 +1,62 @@
+<%- include('../partials/header', { title: 'Orders' }) %>
+<h1>Orders</h1>
+<p class="subtitle">Orders for your produce, from request through to payout.</p>
+
+<% if (orders.length === 0) { %>
+  <div class="empty-state">No orders yet for your produce.</div>
+<% } else { %>
+  <% orders.forEach(function(o) { %>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between;">
+        <span class="subtitle">Order #<%= o.id %> — Buyer: <%= o.buyer_name %></span>
+        <span class="status-pill status-<%= o.status.toLowerCase() %>"><%= o.status.replace(/_/g,' ') %></span>
+      </div>
+
+      <%- include('../partials/orderStepper', { stepper: o.stepper, order: o }) %>
+
+      <p style="margin:6px 0;"><%= o.items.map(function(i){ return i.crop_type + ' (' + i.quantity + ' ' + i.unit + ')'; }).join(', ') %></p>
+      <p style="font-weight:700;">You'll receive ₦<%= o.produce_total.toFixed(2) %> after your produce is delivered to the buyer.</p>
+      <p class="subtitle">Buyer's preferred transportation logistics is: <strong><%= o.preferred_company_name %></strong></p>
+
+      <% if (o.status === 'SOLD_OUT') { %>
+        <p class="subtitle" style="margin-top:8px; color:#C62828;">This request could no longer be fulfilled — the produce sold out to another buyer before you approved it. No action needed.</p>
+      <% } else if (o.status === 'PENDING_APPROVAL') { %>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <form action="/farmer/orders/<%= o.id %>/approve" method="POST" style="flex:1;" onsubmit="return confirm('Approve this order? The buyer will then be asked to pay.');">
+            <button type="submit" class="btn btn-primary btn-block">Approve</button>
+          </form>
+          <form action="/farmer/orders/<%= o.id %>/reject" method="POST" style="flex:1;">
+            <input type="hidden" name="reason" value="Unable to fulfil this order">
+            <button type="submit" class="btn btn-outline btn-block" style="color:#C62828;" onclick="return confirm('Reject this order? The buyer will not be charged.');">Reject</button>
+          </form>
+        </div>
+      <% } else if (o.status === 'APPROVED_AWAITING_PAYMENT') { %>
+        <p class="subtitle" style="margin-top:8px;">Waiting for buyer to pay.</p>
+      <% } else if (o.status === 'PAID' && !o.transport_company_paid) { %>
+        <p class="subtitle" style="margin-top:8px; color:var(--green); font-weight:600;">Buyer has paid!</p>
+        <p class="subtitle" style="margin-top:4px;">Waiting for admin to confirm payment to <strong><%= o.fulfilling_company_name %></strong> before you can drop off.</p>
+      <% } else if (o.status === 'PAID' && o.transport_company_paid && !o.dropped_off_at) { %>
+        <div class="card" style="background:#F8F8F8; margin-top:8px;">
+          <p style="margin:0 0 8px;">Take your produce to:</p>
+          <p style="font-weight:700; margin:0 0 10px;"><%= o.fulfilling_kaduna_park %></p>
+          <form action="/farmer/orders/<%= o.id %>/drop-off" method="POST" onsubmit="return confirm('Confirm you have dropped off the produce at this park?');">
+            <button type="submit" class="btn btn-primary btn-block">Mark as Dropped Off</button>
+          </form>
+        </div>
+      <% } else if (o.status === 'IN_TRANSIT') { %>
+        <p class="subtitle" style="margin-top:8px;">In transit via <%= o.fulfilling_company_name %><% if (o.estimated_delivery_hours) { %> — estimated delivery in ~<%= o.estimated_delivery_hours %> hour(s)<% } %></p>
+      <% } else if (o.status === 'DELIVERED' && !o.farmer_paid_out && !o.farmer_bank_account) { %>
+        <a href="/farmer/orders/<%= o.id %>/payout" class="btn btn-primary" style="margin-top:8px;">Enter Bank Details for Payout</a>
+      <% } else if (o.status === 'DELIVERED' && !o.farmer_paid_out && o.farmer_bank_account) { %>
+        <p class="subtitle" style="margin-top:8px;">Bank details submitted — waiting for admin to send your ₦<%= o.produce_total.toFixed(2) %> payout.</p>
+      <% } else if (o.status === 'DELIVERED' && o.farmer_paid_out) { %>
+        <p class="subtitle" style="margin-top:8px; color:var(--green); font-weight:700;">✓ Paid out ₦<%= o.produce_total.toFixed(2) %></p>
+      <% } %>
+
+      <% if (o.status !== 'SOLD_OUT') { %>
+        <a href="/messages/<%= o.buyer_id %>?order=<%= o.id %>" class="btn btn-outline" style="margin-top:8px; display:inline-block;">Message Buyer</a>
+      <% } %>
+    </div>
+  <% }) %>
+<% } %>
+<%- include('../partials/footer') %>

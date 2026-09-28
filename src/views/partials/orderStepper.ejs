@@ -1,0 +1,21 @@
+<%
+// Expects `stepper` (from computeStepper()) and `order` in scope.
+%>
+<div class="order-stepper">
+  <div class="step <%= stepper.step1 %>">
+    <div class="dot <%= stepper.step1 %>"></div>
+    <div class="label">Pending</div>
+  </div>
+  <div class="line <%= stepper.line1 %>"></div>
+  <div class="step <%= stepper.step2 %>">
+    <div class="dot <%= stepper.step2 %>"></div>
+    <div class="label"><%= stepper.step2Label %></div>
+    <% if (stepper.step2Sub) { %><div class="sublabel"><%= stepper.step2Sub %></div><% } %>
+  </div>
+  <div class="line <%= stepper.line2 %>"></div>
+  <div class="step <%= stepper.step3 %>">
+    <div class="dot <%= stepper.step3 %>"></div>
+    <div class="label">Delivered</div>
+    <% if (stepper.step3Sub) { %><div class="sublabel"><%= stepper.step3Sub %></div><% } %>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<%- include('../partials/header', { title: 'Message ' + other.name }) %>
+<p><a href="/messages">&larr; All conversations</a></p>
+<h1><%= other.name %></h1>
+<p class="subtitle"><%= other.role.charAt(0) + other.role.slice(1).toLowerCase() %></p>
+
+<div class="msg-thread">
+  <% thread.forEach(function(m) { %>
+    <div class="msg-bubble <%= m.sender_id === currentUser.id ? 'msg-mine' : 'msg-theirs' %>">
+      <%= m.content %>
+      <div class="msg-meta"><%= new Date(m.created_at).toLocaleString() %></div>
+    </div>
+  <% }) %>
+  <% if (thread.length === 0) { %>
+    <p class="subtitle">No messages yet — say hello.</p>
+  <% } %>
+</div>
+
+<form action="/messages/<%= other.id %>" method="POST" style="display:flex; gap:8px;">
+  <input type="hidden" name="orderId" value="<%= orderId %>">
+  <input type="text" name="content" placeholder="Type a message…" required style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px;">
+  <button type="submit" class="btn btn-primary">Send</button>
+</form>
+<%- include('../partials/footer') %>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= typeof title !== 'undefined' ? title + ' — AgroReach' : 'AgroReach' %></title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="brand">AgroReach</a>
+    <nav class="nav">
+      <% if (currentUser) { %>
+        <% if (currentUser.role === 'FARMER') { %>
+          <a href="/farmer/dashboard">My Listings</a>
+          <a href="/farmer/orders">Orders</a>
+          <a href="/farmer/profile">My Profile</a>
+        <% } else if (currentUser.role === 'BUYER') { %>
+          <a href="/buyer/dashboard">Browse Produce</a>
+          <a href="/buyer/cart">Cart</a>
+          <a href="/buyer/orders">My Orders</a>
+          <a href="/buyer/profile">My Profile</a>
+        <% } else if (currentUser.role === 'ADMIN') { %>
+          <a href="/admin/pending">Pending Listings</a>
+          <a href="/admin/logistics">Logistics</a>
+        <% } %>
+        <a href="/messages">Messages</a>
+        <a href="/notifications" class="notif-link">Notifications<% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %> <span class="badge"><%= unreadCount %></span><% } %></a>
+        <span class="who">Hi, <%= currentUser.name %></span>
+        <form action="/logout" method="POST" class="inline-form">
+          <button type="submit" class="link-btn">Log Out</button>
+        </form>
+      <% } else { %>
+        <a href="/login">Log In</a>
+        <a href="/register">Register</a>
+      <% } %>
+    </nav>
+  </header>
+  <% if (typeof flash !== 'undefined' && flash) { %>
+    <div class="toast toast-<%= flash.type %>" id="flashToast">
+      <span><%= flash.message %></span>
+      <button type="button" class="toast-close" onclick="document.getElementById('flashToast').remove()" aria-label="Dismiss">&times;</button>
+    </div>
+    <script>
+      (function () {
+        var t = document.getElementById('flashToast');
+        var header = document.querySelector('.topbar');
+        if (t && header) {
+          t.style.top = (header.getBoundingClientRect().bottom + 12) + 'px';
+        }
+        setTimeout(function () {
+          if (t) { t.classList.add('toast-hide'); setTimeout(function () { t.remove(); }, 300); }
+        }, 3500);
+      })();
+    </script>
+  <% } %>
+  <main class="container">
